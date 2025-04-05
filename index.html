@@ -26,8 +26,14 @@
     #project-form {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin-bottom: 10px;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     input[type="text"],
@@ -56,8 +62,7 @@
       font-size: 14px;
       color: #666;
       text-align: center;
-      margin-top: -6px;
-      margin-bottom: 16px;
+      margin-top: -4px;
     }
 
     .project {
@@ -103,8 +108,17 @@
     }
 
     @media (min-width: 600px) {
-      #project-form {
+      .form-row {
         flex-direction: row;
+      }
+
+      .form-row input[type="text"],
+      .form-row input[type="datetime-local"] {
+        flex: 1;
+      }
+
+      .form-row button {
+        width: 90px;
       }
     }
   </style>
@@ -113,9 +127,11 @@
   <h1>Work Tracker</h1>
 
   <form id="project-form">
-    <input type="text" id="project-name" placeholder="Project name" required />
-    <input type="datetime-local" id="project-deadline" required />
-    <button type="submit" class="add-button">Add</button>
+    <div class="form-row">
+      <input type="text" id="project-name" placeholder="Project name" required />
+      <input type="datetime-local" id="project-deadline" required />
+      <button type="submit" class="add-button">Add</button>
+    </div>
     <div id="preview-hint">📅 Pick a date and time</div>
   </form>
 
