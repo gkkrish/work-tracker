@@ -42,6 +42,7 @@
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
+      width: 100%;
     }
 
     button {
@@ -58,11 +59,54 @@
       font-weight: 600;
     }
 
+    .datetime-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    .datetime-placeholder {
+      position: absolute;
+      font-size: 15px;
+      color: #999;
+      pointer-events: none;
+      transition: 0.2s ease all;
+      top: 50%;
+      right: 14px;
+      transform: translateY(-50%);
+    }
+
+    @media (min-width: 600px) {
+      .form-row {
+        flex-direction: row;
+      }
+
+      .form-row input[type="text"] {
+        flex: 1;
+      }
+
+      .form-row button {
+        width: 90px;
+      }
+
+      .datetime-placeholder {
+        top: auto;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+      }
+    }
+
+    input[type="datetime-local"]:focus + .datetime-placeholder,
+    input[type="datetime-local"]:not(:placeholder-shown) + .datetime-placeholder {
+      opacity: 0;
+    }
+
     #preview-hint {
       font-size: 14px;
       color: #666;
       text-align: center;
-      margin-top: -4px;
+      margin-top: 4px;
     }
 
     .project {
@@ -106,21 +150,6 @@
     .controls button:hover {
       background-color: #ddd;
     }
-
-    @media (min-width: 600px) {
-      .form-row {
-        flex-direction: row;
-      }
-
-      .form-row input[type="text"],
-      .form-row input[type="datetime-local"] {
-        flex: 1;
-      }
-
-      .form-row button {
-        width: 90px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -129,16 +158,17 @@
   <form id="project-form">
     <div class="form-row">
       <input type="text" id="project-name" placeholder="Project name" required />
-    
+
       <div class="datetime-wrapper">
         <input type="datetime-local" id="project-deadline" required />
-        <span class="datetime-placeholder" id="datetime-placeholder">Select deadline</span>
+        <span class="datetime-placeholder" id="datetime-placeholder">Select Deadline</span>
       </div>
-    
+
       <button type="submit" class="add-button">Add</button>
     </div>
-  </form>
 
+    <div id="preview-hint">📅 Pick a date and time</div>
+  </form>
 
   <div id="projects"></div>
 
@@ -157,20 +187,27 @@
 
     const form = document.getElementById("project-form");
     const projectsDiv = document.getElementById("projects");
+    const datetimeInput = document.getElementById("project-deadline");
+    const datetimePlaceholder = document.getElementById("datetime-placeholder");
     const previewHint = document.getElementById("preview-hint");
-    const deadlineInput = document.getElementById("project-deadline");
 
-    // 📅 Live deadline preview
-    deadlineInput.addEventListener("input", () => {
-      const val = deadlineInput.value;
-      if (!val) {
+    datetimeInput.addEventListener("input", () => {
+      if (!datetimeInput.value) {
+        datetimePlaceholder.style.opacity = "1";
         previewHint.textContent = "📅 Pick a date and time";
-        return;
+      } else {
+        datetimePlaceholder.style.opacity = "0";
+        const date = new Date(datetimeInput.value);
+        const options = {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        };
+        const formatted = date.toLocaleString(undefined, options);
+        previewHint.textContent = `🕒 Deadline preview: ${formatted}`;
       }
-      const date = new Date(val);
-      const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      const formatted = date.toLocaleString(undefined, options);
-      previewHint.textContent = `🕒 Deadline preview: ${formatted}`;
     });
 
     function formatTimeDiff(deadline) {
@@ -251,6 +288,7 @@
         await db.collection("projects").add({ name, deadline });
         form.reset();
         previewHint.textContent = "📅 Pick a date and time";
+        datetimePlaceholder.style.opacity = "1";
       }
     });
 
