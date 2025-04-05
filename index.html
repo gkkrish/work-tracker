@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Work Tracker (Cloud Sync)</title>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
@@ -11,42 +12,95 @@
       max-width: 600px;
       margin: 40px auto;
       padding: 0 16px;
+      font-size: 18px;
+      background-color: #fff;
     }
-    h1 { text-align: center; }
-    #project-form { display: flex; gap: 10px; margin-bottom: 20px; }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #project-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
     input[type="text"], input[type="datetime-local"] {
-      flex: 1;
-      padding: 8px;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
+
     button {
-      padding: 8px 12px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
       cursor: pointer;
     }
+
     .project {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .late {
+      color: red;
+    }
+
+    .remaining {
+      color: green;
+    }
+
+    .controls button {
+      margin-left: 6px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background-color: #eee;
+      border: 1px solid #ccc;
       border-radius: 6px;
     }
-    .late { color: red; }
-    .remaining { color: green; }
-    .controls button { margin-left: 5px; }
+
+    .controls button:hover {
+      background-color: #ddd;
+    }
+
+    .add-button {
+      background-color: #007aff;
+      color: white;
+      border: none;
+    }
+
+    @media (min-width: 600px) {
+      #project-form {
+        flex-direction: row;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Work Tracker (Cloud Sync)</h1>
+
   <form id="project-form">
     <input type="text" id="project-name" placeholder="Project name" required />
     <input type="datetime-local" id="project-deadline" required />
-    <button type="submit">Add</button>
+    <button type="submit" class="add-button">Add</button>
   </form>
+
   <div id="projects"></div>
 
   <script>
-    // ✅ Firebase config
+    // 🔥 Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAMx09CouEAWi_w3MLrLeft4vn2YFCNQvg",
       authDomain: "work-tracker-149ea.firebaseapp.com",
