@@ -1,11 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Work Tracker</title>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 0 16px;
+      font-size: 18px;
+      background-color: #fff;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    #project-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"] {
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .add-button {
+      background-color: #007aff;
+      color: white;
+      border: none;
+      font-weight: 600;
+    }
+
+    #preview-hint {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-top: -6px;
+      margin-bottom: 16px;
+    }
+
+    .project {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .project strong {
+      font-size: 17px;
+    }
+
+    .late {
+      color: #e74c3c;
+      font-weight: 500;
+    }
+
+    .remaining {
+      color: #2ecc71;
+      font-weight: 500;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .controls button {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 14px;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .controls button:hover {
+      background-color: #ddd;
+    }
+
+    @media (min-width: 600px) {
+      #project-form {
+        flex-direction: row;
+      }
+    }
+  </style>
+</head>
 <body>
   <h1>Work Tracker</h1>
 
   <form id="project-form">
     <input type="text" id="project-name" placeholder="Project name" required />
     <input type="datetime-local" id="project-deadline" required />
-    <small id="preview-hint" style="text-align:center; color: #666;">📅 Pick a date and time</small>
     <button type="submit" class="add-button">Add</button>
+    <div id="preview-hint">📅 Pick a date and time</div>
   </form>
 
   <div id="projects"></div>
@@ -25,11 +136,10 @@
 
     const form = document.getElementById("project-form");
     const projectsDiv = document.getElementById("projects");
-
-    // 👇 Dynamic deadline preview
-    const deadlineInput = document.getElementById("project-deadline");
     const previewHint = document.getElementById("preview-hint");
+    const deadlineInput = document.getElementById("project-deadline");
 
+    // 📅 Live deadline preview
     deadlineInput.addEventListener("input", () => {
       const val = deadlineInput.value;
       if (!val) {
@@ -86,4 +196,46 @@
         container.className = "project";
 
         const timeInfo = formatTimeDiff(proj.deadline);
-        const info = document.createElement("
+        const info = document.createElement("div");
+        info.innerHTML = `<strong>${proj.name}</strong><br>
+          <span class="${timeInfo.isLate ? "late" : "remaining"}">${timeInfo.text}</span>`;
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.onclick = () => editProject(proj.id, proj);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = () => deleteProject(proj.id);
+
+        controls.appendChild(editBtn);
+        controls.appendChild(deleteBtn);
+
+        container.appendChild(info);
+        container.appendChild(controls);
+        projectsDiv.appendChild(container);
+      });
+    }
+
+    db.collection("projects").onSnapshot(renderProjects);
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = document.getElementById("project-name").value;
+      const deadline = document.getElementById("project-deadline").value;
+      if (name && deadline) {
+        await db.collection("projects").add({ name, deadline });
+        form.reset();
+        previewHint.textContent = "📅 Pick a date and time";
+      }
+    });
+
+    setInterval(() => {
+      db.collection("projects").get().then(renderProjects);
+    }, 1000);
+  </script>
+</body>
+</html>
