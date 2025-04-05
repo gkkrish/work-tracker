@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Work Tracker (Cloud Sync)</title>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -46,7 +46,7 @@
   <div id="projects"></div>
 
   <script>
-    // 🔥 Your Firebase config (safe for frontend use)
+    // ✅ Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAMx09CouEAWi_w3MLrLeft4vn2YFCNQvg",
       authDomain: "work-tracker-149ea.firebaseapp.com",
@@ -56,14 +56,12 @@
       appId: "1:919883737509:web:653dfd2866f845219fa04c"
     };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     const form = document.getElementById("project-form");
     const projectsDiv = document.getElementById("projects");
 
-    // Format countdown with seconds
     function formatTimeDiff(deadline) {
       const now = new Date();
       const end = new Date(deadline);
@@ -132,7 +130,6 @@
       });
     }
 
-    // Realtime sync
     db.collection("projects").onSnapshot(renderProjects);
 
     form.addEventListener("submit", async e => {
@@ -145,7 +142,6 @@
       }
     });
 
-    // Update countdowns every second
     setInterval(() => {
       db.collection("projects").get().then(renderProjects);
     }, 1000);
