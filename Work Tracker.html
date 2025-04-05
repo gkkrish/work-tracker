@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Work Tracker (Cloud Sync)</title>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    h1 { text-align: center; }
+    #project-form { display: flex; gap: 10px; margin-bottom: 20px; }
+    input[type="text"], input[type="datetime-local"] {
+      flex: 1;
+      padding: 8px;
+    }
+    button {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .project {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+    .late { color: red; }
+    .remaining { color: green; }
+    .controls button { margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Work Tracker (Cloud Sync)</h1>
+  <form id="project-form">
+    <input type="text" id="project-name" placeholder="Project name" required />
+    <input type="datetime-local" id="project-deadline" required />
+    <button type="submit">Add</button>
+  </form>
+  <div id="projects"></div>
+
+  <script>
+    // 🔥 Your Firebase config (safe for frontend use)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAMx09CouEAWi_w3MLrLeft4vn2YFCNQvg",
+      authDomain: "work-tracker-149ea.firebaseapp.com",
+      projectId: "work-tracker-149ea",
+      storageBucket: "work-tracker-149ea.appspot.com",
+      messagingSenderId: "919883737509",
+      appId: "1:919883737509:web:653dfd2866f845219fa04c"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById("project-form");
+    const projectsDiv = document.getElementById("projects");
+
+    // Format countdown with seconds
+    function formatTimeDiff(deadline) {
+      const now = new Date();
+      const end = new Date(deadline);
+      const diff = end - now;
+      const absDiff = Math.abs(diff);
+
+      const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((absDiff % (1000 * 60)) / 1000);
+
+      const formatted = `${days}d ${hours}h ${mins}m ${secs}s`;
+      return {
+        text: diff < 0 ? `${formatted} late` : `${formatted} left`,
+        isLate: diff < 0
+      };
+    }
+
+    async function deleteProject(id) {
+      await db.collection("projects").doc(id).delete();
+    }
+
+    async function editProject(id, current) {
+      const newName = prompt("Edit name:", current.name);
+      const newDeadline = prompt("Edit deadline (YYYY-MM-DDTHH:MM):", current.deadline);
+      if (newName && newDeadline) {
+        await db.collection("projects").doc(id).update({
+          name: newName,
+          deadline: newDeadline
+        });
+      }
+    }
+
+    function renderProjects(snapshot) {
+      projectsDiv.innerHTML = "";
+      const docs = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+      docs.forEach(proj => {
+        const container = document.createElement("div");
+        container.className = "project";
+
+        const timeInfo = formatTimeDiff(proj.deadline);
+        const info = document.createElement("div");
+        info.innerHTML = `<strong>${proj.name}</strong><br>
+          <span class="${timeInfo.isLate ? "late" : "remaining"}">${timeInfo.text}</span>`;
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.onclick = () => editProject(proj.id, proj);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.onclick = () => deleteProject(proj.id);
+
+        controls.appendChild(editBtn);
+        controls.appendChild(deleteBtn);
+
+        container.appendChild(info);
+        container.appendChild(controls);
+        projectsDiv.appendChild(container);
+      });
+    }
+
+    // Realtime sync
+    db.collection("projects").onSnapshot(renderProjects);
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = document.getElementById("project-name").value;
+      const deadline = document.getElementById("project-deadline").value;
+      if (name && deadline) {
+        await db.collection("projects").add({ name, deadline });
+        form.reset();
+      }
+    });
+
+    // Update countdowns every second
+    setInterval(() => {
+      db.collection("projects").get().then(renderProjects);
+    }, 1000);
+  </script>
+</body>
+</html>
