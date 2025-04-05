@@ -129,11 +129,16 @@
   <form id="project-form">
     <div class="form-row">
       <input type="text" id="project-name" placeholder="Project name" required />
-      <input type="datetime-local" id="project-deadline" required />
+    
+      <div class="datetime-wrapper">
+        <input type="datetime-local" id="project-deadline" required />
+        <span class="datetime-placeholder" id="datetime-placeholder">Select deadline</span>
+      </div>
+    
       <button type="submit" class="add-button">Add</button>
     </div>
-    <div id="preview-hint">📅 Pick a date and time</div>
   </form>
+
 
   <div id="projects"></div>
 
