@@ -66,18 +66,19 @@
 
     .datetime-placeholder {
       position: absolute;
-      font-size: 15px;
       color: #999;
+      font-size: 14px;
       pointer-events: none;
       transition: 0.2s ease all;
-      top: 50%;
       right: 14px;
+      top: 50%;
       transform: translateY(-50%);
     }
 
     @media (min-width: 600px) {
       .form-row {
         flex-direction: row;
+        align-items: flex-start;
       }
 
       .form-row input[type="text"] {
@@ -161,13 +162,13 @@
 
       <div class="datetime-wrapper">
         <input type="datetime-local" id="project-deadline" required />
-        <span class="datetime-placeholder" id="datetime-placeholder">Select deadline</span>
+        <span class="datetime-placeholder" id="datetime-placeholder">📅 Pick a date and time</span>
       </div>
 
       <button type="submit" class="add-button">Add</button>
     </div>
 
-    <div id="preview-hint">📅 Pick a date and time</div>
+    <div id="preview-hint">🕒 Deadline preview will appear here</div>
   </form>
 
   <div id="projects"></div>
